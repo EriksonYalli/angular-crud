@@ -1,21 +1,49 @@
 <div class="flex justify-between p-4">
     <div class="flex justify-center items-center">
-        <button type="button" mat-icon-button>
+        <button type="button" mat-icon-button (click)="toggleFilters()">
             <mat-icon>filter_list</mat-icon>
         </button>
-
-        <input type="text" placeholder="Buscar producto" style="padding: 0.5rem;">
+        
+        <form [formGroup]="filterForm">
+            <mat-form-field appearance="outline" class="mr-2">
+                <mat-label>Buscar producto</mat-label>
+                <input matInput formControlName="name" placeholder="Nombre del producto">
+                <button *ngIf="filterForm.get('name')?.value" mat-icon-button matSuffix 
+                        (click)="filterForm.get('name')?.setValue('')">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </mat-form-field>
+        </form>
     </div>
-
+    
     <button type="button" mat-flat-button (click)="openProductDlg()">
         <mat-icon>add</mat-icon>
         Nuevo producto
     </button>
 </div>
 
-<div class="w-full overflow-x-auto">
-    <table mat-table [dataSource]="dataSource">
+<!-- Panel de filtros avanzados -->
+<div class="p-4 bg-gray-100 rounded mb-4" *ngIf="showFilters">
+    <form [formGroup]="filterForm" class="flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-64">
+            <span class="block mb-2">Precio máximo: {{ filterForm.get('maxPrice')?.value}}</span>
+            <mat-slider min="0" [max]="maxPriceValue" step="10" class="w-full">
+                <input matSliderThumb formControlName="maxPrice">
+            </mat-slider>
+        </div>
+        
+        <button type="button" mat-stroked-button color="warn" (click)="resetFilters()">
+            Limpiar filtros
+        </button>
+    </form>
+    
+    <div class="mt-2 text-sm text-gray-600">
+        Mostrando {{ filteredDataSource.length }} de {{ dataSource.length }} productos
+    </div>
+</div>
 
+<div class="w-full overflow-x-auto">
+    <table mat-table [dataSource]="filteredDataSource">
         <!-- Image Column -->
         <ng-container matColumnDef="image">
             <th mat-header-cell *matHeaderCellDef></th>
@@ -23,35 +51,35 @@
                 <img [src]="element.imageUrl" alt="Product image" height="32" width="32">
             </td>
         </ng-container>
-
+        
         <!-- Name Column -->
         <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef> Nombre </th>
             <td mat-cell *matCellDef="let element"> {{element.name}} </td>
         </ng-container>
-
+        
         <!-- Description Column -->
         <ng-container matColumnDef="description">
             <th mat-header-cell *matHeaderCellDef> Descripción </th>
             <td mat-cell *matCellDef="let element"> {{element.description}} </td>
         </ng-container>
-
+        
         <!-- Currency Column -->
         <ng-container matColumnDef="currency">
             <th mat-header-cell *matHeaderCellDef> Moneda </th>
             <td mat-cell *matCellDef="let element"> {{element.currencyCode}} </td>
         </ng-container>
-
+        
         <ng-container matColumnDef="price">
             <th mat-header-cell *matHeaderCellDef> Precio </th>
             <td mat-cell *matCellDef="let element"> {{element.price}} </td>
         </ng-container>
-
+        
         <ng-container matColumnDef="state">
             <th mat-header-cell *matHeaderCellDef> Estado </th>
             <td mat-cell *matCellDef="let element"> {{element.state}} </td>
         </ng-container>
-
+        
         <ng-container matColumnDef="action">
             <th mat-header-cell *matHeaderCellDef> Acciones </th>
             <td mat-cell *matCellDef="let element">
@@ -59,7 +87,7 @@
                     (click)="inactiveProduct(element.id)">Eliminar</button>
             </td>
         </ng-container>
-
+        
         <tr mat-header-row *matHeaderRowDef="columns"></tr>
         <tr mat-row *matRowDef="let row; columns: columns;" (dblclick)="openProductDlg(row)"></tr>
     </table>
